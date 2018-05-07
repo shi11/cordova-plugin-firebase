@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.NotificationManagerCompat;
+import android.app.NotificationManager;
 import android.util.Base64;
 import android.util.Log;
 
@@ -188,6 +189,9 @@ public class FirebasePlugin extends CordovaPlugin {
             return true;
         } else if (action.equals("setAnalyticsCollectionEnabled")) {
             this.setAnalyticsCollectionEnabled(callbackContext, args.getBoolean(0));
+            return true;
+        } else if (action.equals("clearAllNotifications")) {
+            this.clearAllNotifications(callbackContext);
             return true;
         }
 
@@ -865,6 +869,23 @@ public class FirebasePlugin extends CordovaPlugin {
                     mFirebaseAnalytics.setAnalyticsCollectionEnabled(enabled);
 
                     callbackContext.success();
+                } catch (Exception e) {
+                    FirebaseCrash.log(e.getMessage());
+                    e.printStackTrace();
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    public void clearAllNotifications(final CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                try {
+                    Context context = cordova.getActivity();
+				    NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+					nm.cancelAll();
+					callbackContext.success();
                 } catch (Exception e) {
                     FirebaseCrash.log(e.getMessage());
                     e.printStackTrace();
